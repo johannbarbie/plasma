@@ -1,4 +1,4 @@
-pragma solidity 0.4.18;
+pragma solidity ^0.4.18;
 
 import "./lib/SafeMath.sol";
 import "./lib/Math.sol";
@@ -61,6 +61,10 @@ contract RootChain {
   modifier isAuthority() {
     require(msg.sender == authority);
     _;
+  }
+
+  function incrementWeekOldBlock() public {
+    weekOldBlock = weekOldBlock.add(1);
   }
 
   modifier incrementOldBlocks() {
