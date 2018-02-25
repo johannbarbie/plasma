@@ -55,7 +55,7 @@ contract('Root chain', function(accounts) {
 
     it('should not overwrite exit', async function() {
 
-      // alice and deposit and mine
+      // alice deposits, spends. blocks get mined
       let alice = wallets[0].getAddressString();
       let a_depositTx = getDepositTx(alice, value)
       await rootChain.deposit(utils.bufferToHex(a_depositTx.serializeTx()), { from: alice, value: value });
@@ -80,7 +80,7 @@ contract('Root chain', function(accounts) {
         ])
       )
 
-      // bob and deposit and mine
+      // bob deposits, spends. blocks get mined
       let bob = wallets[1].getAddressString();
       let b_depositTx = getDepositTx(bob, value)
       await rootChain.deposit(utils.bufferToHex(b_depositTx.serializeTx()), { from: bob, value: value });
@@ -106,22 +106,25 @@ contract('Root chain', function(accounts) {
       )
 
       // time passes and blocks move ahead
+      // simulated by increase of week old blocks
+      // to triger line `priority = priority.mul(Math.max(txPos[0], weekOldBlock));` in RootChain.sol
       await rootChain.incrementWeekOldBlock();
       await rootChain.incrementWeekOldBlock();
       await rootChain.incrementWeekOldBlock();
       await rootChain.incrementWeekOldBlock();
 
-      // alice start exit
+      // alice starts exit
       await rootChain.startExit([2, 0, 0], a_transferTxBytes, a_proof, a_sigs, { from: alice })
       let [user1, amount1, posResult1] = await rootChain.getExit(4000000000)
       assert.equal(user1, alice);
 
-      // bob start exit
+      // bob starts exit
       await rootChain.startExit([4, 0, 0], b_transferTxBytes, b_proof, b_sigs, { from: bob })
       let [user2, amount2, posResult2] = await rootChain.getExit(4000000000)
 
-      // the exit data of the alice (priority 4000000000) should not be overwritten
+      // the exit data of alice (at priority 4000000000) should not be overwritten
       assert.equal(user2, alice);
+      // yet now it became bob's exit slot
     })
   })
 })
